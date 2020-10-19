@@ -19,23 +19,20 @@ import net.minecraftforge.common.config.Property;
 public class EndermanLiftingBlockEdit {
 	public static final String MODID = "endermanliftingblockedit";
 	public static final String MODNAME = "EndermanLiftingBlockEdit";
-	public static final String VERSION = "1.0";
+	public static final String VERSION = "1.1";
 
 	@Metadata(MODID)
 	public static ModMetadata meta;
 
-	public static HashMap<Block, Boolean> EndermanBlock = new HashMap<Block, Boolean>();
+	public static boolean liftable;
 
 	public static Configuration cfg;
 
 	@Mod.EventHandler
 	public void preinit(FMLPreInitializationEvent event) {
-		ClassHelper.endermanInspection();
 		cfg = new Configuration(event.getSuggestedConfigurationFile());
 		try {
-			for (Block keyblock : ClassHelper.endermanCarriable().keySet()) {
-				EndermanBlock.put(keyblock, cfg.get("Enderman", keyblock.getUnlocalizedName(), false).getBoolean());
-			}
+			liftable = cfg.get("Enderman", "Liftable", false).getBoolean();
 		} finally {
 			cfg.save();
 		}
@@ -49,17 +46,9 @@ public class EndermanLiftingBlockEdit {
 	public void postInit(FMLPostInitializationEvent event) {
 
 		try {
+			ClassHelper.endermanInspection();
 			for (Block keyblock : ClassHelper.endermanCarriable().keySet()) {
-				if (ClassHelper.endermanCarriable().get(keyblock) == true && EndermanBlock.containsKey(keyblock) == true
-						&& EndermanBlock.get(keyblock) == false) {
-					EntityEnderman.setCarriable(keyblock, false);
-				}
-
-				if (ClassHelper.endermanCarriable().get(keyblock) == true
-						&& EndermanBlock.containsKey(keyblock) == false) {
-					cfg.get("Enderman", keyblock.getUnlocalizedName(), false);
-					EntityEnderman.setCarriable(keyblock, false);
-				}
+				EntityEnderman.setCarriable(keyblock, liftable);
 			}
 		} finally {
 			cfg.save();
